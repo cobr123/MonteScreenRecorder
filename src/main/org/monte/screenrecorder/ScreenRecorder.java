@@ -41,6 +41,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
@@ -48,9 +50,12 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
-import javax.sound.sampled.Mixer.Info;
 import javax.sound.sampled.TargetDataLine;
 import javax.swing.SwingUtilities;
+import org.jnativehook.GlobalScreen;
+import org.jnativehook.NativeHookException;
+import org.jnativehook.mouse.NativeMouseEvent;
+import org.jnativehook.mouse.NativeMouseInputListener;
 import org.monte.media.AudioFormatKeys;
 import static org.monte.media.AudioFormatKeys.*;
 import org.monte.media.Buffer;
@@ -58,12 +63,7 @@ import org.monte.media.BufferFlag;
 import static org.monte.media.BufferFlag.*;
 import org.monte.media.Codec;
 import org.monte.media.Format;
-import static org.monte.media.FormatKeys.EncodingKey;
-import static org.monte.media.FormatKeys.FrameRateKey;
-import static org.monte.media.FormatKeys.MIME_QUICKTIME;
 import org.monte.media.FormatKeys.MediaType;
-import static org.monte.media.FormatKeys.MediaTypeKey;
-import static org.monte.media.FormatKeys.MimeTypeKey;
 import org.monte.media.MovieWriter;
 import org.monte.media.Registry;
 import static org.monte.media.VideoFormatKeys.*;
@@ -798,6 +798,11 @@ public class ScreenRecorder extends AbstractStateModel {
             Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener);
             awtEventListener = null;
         }
+        try {
+            //Clean up the native hook.
+            GlobalScreen.unregisterNativeHook();
+        } catch (NativeHookException ex) {
+        }
     }
 
     /**
@@ -847,6 +852,41 @@ public class ScreenRecorder extends AbstractStateModel {
             this.captureArea = recorder.captureArea;
             this.mouseCaptures = recorder.mouseCaptures;
             this.startTime = startTime;
+            
+            try {
+                GlobalScreen.registerNativeHook();
+                //Add the appropriate listeners for the example object.
+                GlobalScreen.addNativeMouseListener(new NativeMouseInputListener(){
+                    @Override
+                    public void nativeMouseClicked(final NativeMouseEvent nme) {
+                    }
+
+                    @Override
+                    public void nativeMousePressed(final NativeMouseEvent nme) {
+                        setMousePressed(true);
+                    }
+
+                    @Override
+                    public void nativeMouseReleased(final NativeMouseEvent nme) {
+                        setMousePressed(false);
+                    }
+
+                    @Override
+                    public void nativeMouseMoved(final NativeMouseEvent nme) {
+                    }
+
+                    @Override
+                    public void nativeMouseDragged(final NativeMouseEvent nme) {
+                    }
+                });
+            }
+            catch (NativeHookException ex) {
+                    System.err.println("There was a problem registering the native hook.");
+                    System.err.println(ex.getMessage());
+
+                    System.exit(1);
+            }
+
         }
 
         public void setFuture(ScheduledFuture future) {
@@ -890,6 +930,7 @@ public class ScreenRecorder extends AbstractStateModel {
             }
             PointerInfo info = MouseInfo.getPointerInfo();
             Point p = info.getLocation();
+            
             if (!info.getDevice().equals(captureDevice)
                     || !captureArea.contains(p)) {
                 // If the cursor is outside the capture region, we

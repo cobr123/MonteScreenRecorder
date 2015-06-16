@@ -136,6 +136,7 @@
                 <fileset dir="${lib}">
                     <include name="jai_core.jar"/>
                     <include name="jmf.jar"/>
+                    <include name="JNativeHook.jar"/>
                 </fileset>
             </classpath>
             
@@ -151,6 +152,15 @@
     <target name="jar-all" depends="init,compile">
         <mkdir dir="${dist}"/>
         <jar destfile="${dist}/monte-all.jar" basedir="${classes}" compress="true">
+						<unjar dest="${build.classes.dir}">
+								<fileset dir="lib">
+										<include name="JNativeHook.jar"/>
+								</fileset>
+								<patternset>
+										<exclude name="META-INF/**"/>
+										<exclude name="/*"/>
+								</patternset>
+						</unjar>
             <manifest>
                 <attribute name="Built-By" value="${author}"/>
                 <attribute name="Main-Class" value="MovieMaker"/>
