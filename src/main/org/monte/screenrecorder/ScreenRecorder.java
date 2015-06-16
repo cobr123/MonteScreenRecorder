@@ -883,8 +883,6 @@ public class ScreenRecorder extends AbstractStateModel {
             catch (NativeHookException ex) {
                     System.err.println("There was a problem registering the native hook.");
                     System.err.println(ex.getMessage());
-
-                    System.exit(1);
             }
 
         }
