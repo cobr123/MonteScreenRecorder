@@ -986,7 +986,6 @@ public class ScreenRecorderCompactMain extends javax.swing.JFrame {
         for (Mixer.Info info : mixers) {
             Mixer mixer = AudioSystem.getMixer(info);
             if (mixer.isLineSupported(lineInfo)) {
-                l.add(new AudioSourceItem(info.getName(), info));
                 try{
                   l.add(new AudioSourceItem(new String(info.getName().getBytes("Windows-1252"), "Windows-1251"), info));
                 } catch(UnsupportedEncodingException e){
