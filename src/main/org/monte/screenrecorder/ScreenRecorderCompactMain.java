@@ -48,6 +48,7 @@ import java.awt.AWTException;
 import java.awt.Desktop;
 import java.awt.Frame;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
@@ -986,6 +987,11 @@ public class ScreenRecorderCompactMain extends javax.swing.JFrame {
             Mixer mixer = AudioSystem.getMixer(info);
             if (mixer.isLineSupported(lineInfo)) {
                 l.add(new AudioSourceItem(info.getName(), info));
+                try{
+                  l.add(new AudioSourceItem(new String(info.getName().getBytes("Windows-1252"), "Windows-1251"), info));
+                } catch(UnsupportedEncodingException e){
+                  l.add(new AudioSourceItem(info.getName(), info));
+                }
             }
         }
         return l;
