@@ -314,7 +314,13 @@ public class AVIOutputStream extends AbstractAVIStream {
      * @return compression quality
      */
     public float getCompressionQuality(int track) {
-        return ((VideoTrack) tracks.get(track)).videoQuality;
+        final Track tr = tracks.get(track);
+        if(tr instanceof VideoTrack){
+            return ((VideoTrack) tr).videoQuality;
+        } else if (tr instanceof AudioTrack){
+            return ((AudioTrack) tr).quality;
+        }
+        return -1;
     }    /**
      * Sets the state of the QuickTimeOutpuStream to started. <p> If the state
      * is changed by this method, the prolog is written.
